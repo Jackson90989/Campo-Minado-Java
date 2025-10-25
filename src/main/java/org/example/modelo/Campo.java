@@ -2,7 +2,6 @@ package org.example.modelo;
 
 import org.example.excecao.Explosao;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,24 +13,25 @@ public class Campo {
     private boolean marcado = false;
 
     private List<Campo> vizinhos = new ArrayList<>();
-    public Campo(int linha, int coluna){
+
+    public Campo(int linha, int coluna) {
         this.linha = linha;
         this.coluna = coluna;
     }
 
-    public boolean adicionarVizinho(Campo vizinho){
+    public boolean adicionarVizinho(Campo vizinho) {
         boolean linhaDiferente = linha != vizinho.linha;
-        boolean colunaDIferente = coluna != vizinho.coluna;
-        boolean diagonal = linhaDiferente && colunaDIferente;
+        boolean colunaDiferente = coluna != vizinho.coluna;
+        boolean diagonal = linhaDiferente && colunaDiferente;
 
         int deltaLinha = Math.abs(linha - vizinho.linha);
         int deltaColuna = Math.abs(coluna - vizinho.coluna);
         int deltaGeral = deltaColuna + deltaLinha;
 
-        if(deltaGeral ==1 && !diagonal){
+        if (deltaGeral == 1 && !diagonal) {
             vizinhos.add(vizinho);
             return true;
-        } else if(deltaGeral == 2 && diagonal){
+        } else if (deltaGeral == 2 && diagonal) {
             vizinhos.add(vizinho);
             return true;
         } else {
@@ -39,62 +39,55 @@ public class Campo {
         }
     }
 
-    public void alternarMarcacao(){
-        if(!aberto){
+    public void alternarMarcacao() {
+        if (!aberto) {
             marcado = !marcado;
-
         }
     }
 
-    public boolean abrir(){
-        if(!aberto && !marcado){
+    public boolean abrir() {
+        if (!aberto && !marcado) {
             aberto = true;
 
-            if(minado){
+            if (minado) {
                 throw new Explosao();
-
-
             }
 
-            if(vizinhacaSegura()){
-                vizinhos.forEach(Campo::abrir);
-
+            if (vizinhacaSegura()) {
+                // Correção: evita recursão infinita
+                vizinhos.forEach(v -> {
+                    if (!v.isAberto() && !v.isMarcado()) {
+                        v.abrir();
+                    }
+                });
             }
-
             return true;
-        } else{
+        } else {
             return false;
         }
     }
 
-boolean vizinhacaSegura(){
+    boolean vizinhacaSegura() {
         return vizinhos.stream().noneMatch(v -> v.minado);
-}
-
-
-public void minar() {
-    if (!minado) {
-
-
-        minado = true;
     }
 
-}
+    public void minar() {
+        if (!minado) {
+            minado = true;
+        }
+    }
 
-public boolean isMinado(){
-   return minado;
-}
+    public boolean isMinado() {
+        return minado;
+    }
 
-
-public  boolean isMarcado(){
+    public boolean isMarcado() {
         return marcado;
-}
+    }
 
-public boolean isAberto(){
-
-        return isAberto();
-
-}
+    public boolean isAberto() {
+        return aberto;
+    }
 
     public int getColuna() {
         return coluna;
@@ -104,38 +97,35 @@ public boolean isAberto(){
         return linha;
     }
 
-    boolean objetivoAlcancado(){
+    public void setAberto(boolean aberto) {
+        this.aberto = aberto;
+    }
+
+    public boolean objetivoAlcancado() {
         boolean desvendado = !minado && aberto;
         boolean protegido = minado && marcado;
         return desvendado || protegido;
-
-
     }
 
-    long minasNavizinhaca(){
+    long minasNaVizinhanca() {
         return vizinhos.stream().filter(v -> v.minado).count();
-
     }
 
-    void reiniciar(){
+    void reiniciar() {
         aberto = false;
         minado = false;
         marcado = false;
     }
 
-    public String toString(){
-        if(marcado){
+    public String toString() {
+        if (marcado) {
             return "x";
-        } else if(
-                aberto && minado
-        ){
+        } else if (aberto && minado) {
             return "*";
-        }
-
-        else if(aberto && minasNavizinhaca()> 0){
-            return Long.toString(minasNavizinhaca());
-        } else if(aberto){
-            return "";
+        } else if (aberto && minasNaVizinhanca() > 0) {
+            return Long.toString(minasNaVizinhanca());
+        } else if (aberto) {
+            return " ";
         } else {
             return "?";
         }

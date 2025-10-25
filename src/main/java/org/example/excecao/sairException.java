@@ -1,5 +1,5 @@
 package org.example.excecao;
 
-public class Explosao extends RuntimeException {
+public class sairException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 }
